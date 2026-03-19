@@ -1,0 +1,62 @@
+{
+  "panels": [
+    {
+      "id": "propose_change_panel",
+      "name": "Propose System Change",
+      "description": "Collaborators can propose changes to a module which are reviewed by maintainers.",
+      "fields": [
+        {
+          "name": "module_name",
+          "label": "Module",
+          "type": "select",
+          "options_source": "/dashboard/state",
+          "required": true
+        },
+        {
+          "name": "proposal_description",
+          "label": "Description of Change",
+          "type": "textarea",
+          "placeholder": "e.g., Update dependencies to fix CVE-2024-XXXX",
+          "required": true
+        }
+      ],
+      "action": {
+        "method": "POST",
+        "url": "/dashboard/propose-change",
+        "payload": {
+          "module_name": "{{module_name.value}}",
+          "proposal_description": "{{proposal_description.value}}"
+        }
+      }
+    },
+    {
+      "id": "apply_action_panel",
+      "name": "Infrastructure Control (Safety Valve)",
+      "description": "Human-in-the-loop authorization to execute agent-proposed changes.",
+      "fields": [
+        {
+          "name": "module_name",
+          "label": "Target Module",
+          "type": "select",
+          "options_source": "/dashboard/state",
+          "required": true
+        },
+        {
+          "name": "action_type",
+          "label": "Action",
+          "type": "button_group",
+          "options": ["reproduce", "update", "rollback"],
+          "default": "reproduce"
+        }
+      ],
+      "action": {
+        "method": "POST",
+        "url": "/dashboard/apply-change",
+        "payload": {
+          "module_name": "{{module_name.value}}",
+          "action_type": "{{action_type.value}}"
+        }
+      }
+    }
+  ]
+}

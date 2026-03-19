@@ -1,0 +1,46 @@
+---
+- name: Provision and Reproduce Project Module
+  hosts: localhost
+  connection: local
+  vars:
+    module_name: "default-module"
+    module_repo: ""
+    target_dir: "./reproduction_env"
+    python_version: "3.11"
+
+  tasks:
+    - name: Ensure target directory exists
+      file:
+        path: "{{ target_dir }}/{{ module_name }}"
+        state: directory
+        mode: '0755'
+
+    - name: Clone module repository (if provided)
+      git:
+        repo: "{{ module_repo }}"
+        dest: "{{ target_dir }}/{{ module_name }}"
+        force: yes
+      when: module_repo != ""
+
+    - name: Create virtual environment
+      command: "python{{ python_version }} -m venv {{ target_dir }}/{{ module_name }}/venv"
+      args:
+        creates: "{{ target_dir }}/{{ module_name }}/venv"
+
+    - name: Install dependencies from requirements.txt
+      pip:
+        requirements: "{{ target_dir }}/{{ module_name }}/requirements.txt"
+        virtualenv: "{{ target_dir }}/{{ module_name }}/venv"
+      ignore_errors: yes
+
+    - name: Update STATE.yaml with provisioning status
+      lineinfile:
+        path: "../../STATE.yaml"
+        regexp: "^  - module_name: \"{{ module_name }}\"$"
+        insertafter: "^  - module_name: \"{{ module_name }}\"$"
+        line: "    provisioned_on: \"{{ ansible_date_time.date }}\""
+      ignore_errors: yes
+
+    - name: Log reproduction success
+      debug:
+        msg: "Module {{ module_name }} has been successfully reproduced in {{ target_dir }}."

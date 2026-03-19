@@ -1,0 +1,124 @@
+services:
+  gitlab:
+    image: 'gitlab/gitlab-ce:latest'
+    restart: always
+    hostname: 'gitlab.local'
+    environment:
+      GITLAB_OMNIBUS_CONFIG: |
+        external_url 'http://gitlab.local'
+    ports:
+      - '8080:80'
+      - '443:443'
+    volumes:
+      - './infrastructure/gitlab/config:/etc/gitlab'
+      - './infrastructure/gitlab/logs:/var/log/gitlab'
+      - './infrastructure/gitlab/data:/var/opt/gitlab'
+    networks:
+      - audit-network
+
+  loki:
+    image: grafana/loki:latest
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/loki/local-config.yaml
+    networks:
+      - audit-network
+
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - ./infrastructure/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    networks:
+      - audit-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: audit_platform_redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - audit-network
+
+  minio:
+    image: minio/minio:latest
+    container_name: audit_platform_minio
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      - MINIO_ROOT_USER=minioadmin
+      - MINIO_ROOT_PASSWORD=minioadmin
+    command: server /data --console-address ":9001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - audit-network
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: audit_platform_app
+    ports:
+      - "8000:8000"
+    depends_on:
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    volumes:
+      - .:/app
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - DATABASE_URL=sqlite+aiosqlite:///./app/data/platform.db
+      - REDIS_URL=redis://redis:6379/0
+      - MINIO_ENDPOINT=minio:9000
+    networks:
+      - audit-network
+
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: audit_platform_worker
+    command: celery -A app.celery_app worker --loglevel=info --concurrency=2
+    depends_on:
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    volumes:
+      - .:/app
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - DATABASE_URL=sqlite+aiosqlite:///./app/data/platform.db
+      - REDIS_URL=redis://redis:6379/0
+      - MINIO_ENDPOINT=minio:9000
+    networks:
+      - audit-network
+
+  frontend:
+    image: node:20-alpine
+    container_name: audit_platform_frontend
+    working_dir: /app/frontend
+    ports:
+      - "5173:5173"
+    volumes:
+      - .:/app
+    command: sh -c "npm install && npm run dev -- --host"
+    networks:
+      - audit-network
+
+networks:
+  audit-network:
+    driver: bridge

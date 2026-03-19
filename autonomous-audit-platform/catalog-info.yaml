@@ -1,0 +1,83 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: autonomous-audit-platform
+  description: The central orchestrator and API for the Autonomous AI Software Engineering Platform.
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+    prometheus.io/rule-name: audit_platform_health
+    backstage.io/view-url: http://localhost:8000/docs
+spec:
+  type: service
+  lifecycle: experimental
+  owner: maintainer
+  system: autonomous-engineering-system
+  providesApis:
+    - autonomous-audit-platform-api
+  dependsOn:
+    - component:audit-agent
+    - component:engineering-agent
+    - resource:minio-storage
+    - resource:temporal-cluster
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: audit-agent
+  description: Specialized AI agent for code analysis and infrastructure auditing.
+spec:
+  type: service
+  lifecycle: experimental
+  owner: maintainer
+  system: autonomous-engineering-system
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: engineering-agent
+  description: Specialized AI agent for code generation, vision processing, and web crawling.
+spec:
+  type: service
+  lifecycle: experimental
+  owner: maintainer
+  system: autonomous-engineering-system
+---
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: minio-storage
+  description: Object storage for audit reports and project artifacts.
+spec:
+  type: storage
+  owner: maintainer
+  system: autonomous-engineering-system
+---
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: temporal-cluster
+  description: Workflow engine for orchestrating distributed agent tasks and long-running processes.
+spec:
+  type: workflow-engine
+  owner: maintainer
+  system: autonomous-engineering-system
+---
+apiVersion: backstage.io/v1alpha1
+kind: System
+metadata:
+  name: autonomous-engineering-system
+  description: Full-stack autonomous software development ecosystem.
+spec:
+  owner: maintainer
+---
+apiVersion: backstage.io/v1alpha1
+kind: API
+metadata:
+  name: autonomous-audit-platform-api
+  description: The REST API for interacting with the Autonomous Audit Platform.
+spec:
+  type: openapi
+  lifecycle: experimental
+  owner: maintainer
+  definition:
+    $text: ./openapi.json

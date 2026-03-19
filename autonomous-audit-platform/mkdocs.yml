@@ -1,0 +1,13 @@
+site_name: "Autonomous Audit Platform Documentation"
+nav:
+  - Home: index.md
+  - Architecture: architecture.md
+  - Testing: testing.md
+  - API Guide: api.md
+  - Collaborators: collaborators.md
+
+theme:
+  name: material
+
+plugins:
+  - techdocs-core

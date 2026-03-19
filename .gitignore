@@ -1,0 +1,35 @@
+# Infrastructure data
+autonomous-audit-platform/infrastructure/
+audit_reports/
+autonomous-audit-platform/audit_reports/
+
+# Python artifacts
+**/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Databases
+*.db
+*.sqlite3
+
+# Environment & Secrets
+.env
+.env.local
+.gemini/
+
+# Node modules
+node_modules/
+**/node_modules/
+
+# Logs
+*.log
+autonomous-audit-platform/*.log
+
+# Project specific
+contract-mvp-finishing.skill
+contract-mvp-finishing/
+run-obsidian-mcp.ps1

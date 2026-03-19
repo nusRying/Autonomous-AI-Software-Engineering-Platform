@@ -1,0 +1,141 @@
+# tasks.yaml
+#
+# Defines the tasks for both Audit and Engineering workflows.
+
+# ── Audit Tasks (Milestone 1) ────────────────────────────────────────────────
+
+doc_analysis_task:
+  description: >
+    Analyze the repository at path: {repo_path}
+
+    Your analysis must cover ALL of the following:
+    1. README and documentation files — what the project does, who it's for
+    2. Architecture overview — key components, how they interact
+    3. API documentation — endpoints, data contracts (if any)
+    4. Missing documentation — what's absent that should be present
+    5. Documentation quality score (1-10) with justification
+
+    Focus only on documentation and architecture understanding.
+    Do NOT analyze source code quality — that is the Code Inspector's job.
+  expected_output: >
+    A structured Markdown report with these exact sections:
+    ## Project Overview
+    ## Architecture Summary
+    ## Documentation Quality Score (X/10)
+    ## Gaps & Recommendations
+  agent: doc_agent
+
+code_scan_task:
+  description: >
+    Perform a comprehensive code quality and security scan of the repository at: {repo_path}
+
+    Your scan must cover:
+    1. File structure — identify main modules, entry points, test coverage
+    2. Code quality issues — complexity, duplication, naming, missing type hints
+    3. Security vulnerabilities — hardcoded secrets, SQL injection risks, insecure
+       dependencies, missing input validation
+    4. Test coverage assessment — are critical paths tested?
+    5. Dependency health — outdated or vulnerable packages
+
+    Prioritize findings as: CRITICAL, HIGH, MEDIUM, LOW.
+    Limit to the top 10 most important findings.
+  expected_output: >
+    A structured Markdown report with these exact sections:
+    ## File Structure Overview
+    ## Code Quality Issues (with severity labels)
+    ## Security Findings (CRITICAL/HIGH/MEDIUM/LOW)
+    ## Test Coverage Assessment
+    ## Dependency Health
+  agent: code_agent
+
+report_generation_task:
+  description: >
+    Using the outputs from the Documentation Analysis and Code Security Scan tasks,
+    produce a final comprehensive audit report for the repository: {repo_path}
+
+    The report must:
+    1. Start with an Executive Summary (3-5 sentences for non-technical readers)
+    2. Combine and de-duplicate findings from both previous tasks
+    3. Sort all findings by severity (CRITICAL first)
+    4. Provide concrete, actionable remediation steps for each finding
+    5. Include an Overall Health Score (1-10) for the repository
+
+    Output the report as valid JSON matching this schema:
+    {{
+      "repo_path": "string",
+      "overall_health_score": 7,
+      "executive_summary": "string",
+      "findings": [
+        {{
+          "id": "F001",
+          "severity": "CRITICAL|HIGH|MEDIUM|LOW",
+          "category": "security|quality|documentation|dependencies",
+          "title": "string",
+          "description": "string",
+          "remediation": "string"
+        }}
+      ],
+      "documentation_score": 7,
+      "code_quality_score": 6
+    }}
+  expected_output: >
+    A valid JSON object matching the schema above, with at least 5 findings.
+    The JSON must be parseable by Python's json.loads().
+  agent: report_agent
+  context:
+    - doc_analysis_task
+    - code_scan_task
+
+
+# ── Engineering Tasks (Milestone 2) ──────────────────────────────────────────
+
+technical_spec_task:
+  description: >
+    Take the following high-level project idea: {project_prompt}
+
+    Decompose this idea into a complete technical specification. Your output MUST include:
+    1. System Architecture — overview of components
+    2. Database Schema — tables, relationships, columns
+    3. API Endpoints — paths, methods, request/response models
+    4. Frontend Structure — key components and state management
+    5. Tech Stack — versions of frameworks to be used (Prefer FastAPI + React + Tailwind)
+
+    Output MUST be a valid JSON object.
+  expected_output: >
+    A detailed JSON specification covering architecture, DB, API, and UI.
+  agent: architect_agent
+
+full_stack_generation_task:
+  description: >
+    Implement the FULL system based on the following technical specification:
+    {tech_spec}
+
+    Project Idea: {project_prompt}
+    Target Directory: {repo_path}
+
+    You must generate:
+    1. `backend/` directory with FastAPI app, models, and routes.
+    2. `frontend/` directory with React/Tailwind components (Vite-based).
+    3. `docker-compose.yml` to run both services.
+    4. `README.md` with setup instructions.
+
+    Focus on writing modular, reusable, and secure code. Include docstrings.
+    All files must be written to the {repo_path} directory.
+  expected_output: >
+    A complete directory structure at {repo_path} containing all source code.
+  agent: engineer_agent
+
+stability_verification_task:
+  description: >
+    Run the generated application in a Docker sandbox.
+    Perform the following:
+    1. Verify backend starts and API docs are reachable.
+    2. Run generated unit tests.
+    3. Report any tracebacks or errors back to the Engineer.
+
+    If errors are found, specify the exact line and fix requirement.
+  expected_output: >
+    A stability report (JSON) with "status": "stable" or "status": "error" + logs.
+  agent: qa_agent
+  context:
+    - full_stack_generation_task

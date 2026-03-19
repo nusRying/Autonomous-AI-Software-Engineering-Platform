@@ -1,0 +1,63 @@
+# Web Framework
+fastapi>=0.115.6
+uvicorn[standard]>=0.34.0
+python-multipart>=0.0.20
+
+# Data Validation
+pydantic>=2.10.0
+pydantic-settings>=2.10.1
+
+# AI / LLM
+crewai>=1.0.0
+litellm>=1.58.0
+
+# Document Ingestion
+llama-index>=0.12.0
+llama-index-core>=0.12.0
+
+# Docker SDK
+docker>=7.1.0
+
+# Task Queue & Scheduling
+celery>=5.4.0
+redis>=5.2.0
+temporalio>=1.7.0
+
+# Storage (MinIO/S3)
+aioboto3>=13.1.1
+
+# Security & Auth
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+bcrypt==4.0.1
+python-dotenv>=1.0.0
+
+# Web Scraping & Analysis
+crawl4ai>=0.3.0
+playwright>=1.40.0
+
+# Vision & Image Processing
+pillow>=10.0.0
+
+# Knowledge/Memory
+llama-index-vector-stores-chroma>=0.1.0
+chromadb>=0.4.0
+
+# Database
+sqlalchemy>=2.0.30
+aiosqlite>=0.20.0
+
+# Git
+gitpython>=3.1.40
+
+# HTTP Client
+httpx>=0.23.0,<0.28.0
+
+# Logging & Observability
+loguru>=0.7.3
+prometheus-fastapi-instrumentator>=7.0.0
+
+# Testing
+pytest>=8.3.0
+pytest-asyncio>=0.25.0
+pytest-cov>=6.0.0

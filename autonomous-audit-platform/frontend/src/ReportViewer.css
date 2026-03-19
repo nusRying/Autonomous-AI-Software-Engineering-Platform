@@ -1,0 +1,129 @@
+.report-viewer-container {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  color: #f3f4f6;
+  font-family: 'Inter', sans-serif;
+}
+
+.report-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.back-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #fff;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.back-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.job-id-text {
+  font-size: 0.9rem;
+  color: #9ca3af;
+  font-family: monospace;
+}
+
+.score-badge {
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 1rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.report-tabs {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.tab-btn {
+  background: transparent;
+  border: none;
+  color: #9ca3af;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
+}
+
+.tab-btn:hover {
+  color: #fff;
+}
+
+.tab-btn.active {
+  color: #3b82f6;
+  border-bottom-color: #3b82f6;
+}
+
+.report-content {
+  background: rgba(17, 24, 39, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 2rem;
+  min-height: 500px;
+  backdrop-filter: blur(10px);
+}
+
+.markdown-view {
+  line-height: 1.6;
+}
+
+.markdown-view h1, .markdown-view h2, .markdown-view h3 {
+  color: #3b82f6;
+  margin-top: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.markdown-view p {
+  margin-bottom: 1rem;
+}
+
+.markdown-view code {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+  font-family: monospace;
+}
+
+.markdown-view pre {
+  margin: 1.5rem 0;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.json-view pre {
+  margin: 0 !important;
+  background: transparent !important;
+}
+
+.report-loading, .report-error {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 80vh;
+  font-size: 1.2rem;
+}
+
+.report-error {
+  color: #ef4444;
+}

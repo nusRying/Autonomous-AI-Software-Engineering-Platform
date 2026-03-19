@@ -1,0 +1,10 @@
+infrastructure/
+audit_reports/
+**/__pycache__/
+*.db
+*.log
+.git/
+.pytest_cache/
+frontend/node_modules/
+dashboard/node_modules/
+.env
