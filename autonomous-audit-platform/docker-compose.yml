@@ -6,6 +6,11 @@ services:
     environment:
       GITLAB_OMNIBUS_CONFIG: |
         external_url 'http://gitlab.local'
+        # Reduce memory footprint for local dev
+        puma['worker_processes'] = 0
+        sidekiq['max_concurrency'] = 10
+        prometheus_monitoring['enable'] = false
+        gitlab_rails['initial_root_password'] = 'rootpassword123'
     ports:
       - '8080:80'
       - '443:443'
@@ -13,6 +18,51 @@ services:
       - './infrastructure/gitlab/config:/etc/gitlab'
       - './infrastructure/gitlab/logs:/var/log/gitlab'
       - './infrastructure/gitlab/data:/var/opt/gitlab'
+    shm_size: '256m'
+    healthcheck:
+      test: ["CMD", "/opt/gitlab/bin/gitlab-healthcheck", "--fail", "--max-time", "10"]
+      interval: 60s
+      timeout: 60s
+      retries: 20
+    networks:
+      - audit-network
+    deploy:
+      resources:
+        limits:
+          memory: 4096M
+
+  temporal:
+    image: temporalio/auto-setup:1.22.0
+    container_name: audit_platform_temporal
+    ports:
+      - "7233:7233"
+      - "8233:8233"
+    environment:
+      - DB=postgresql
+      - DB_PORT=5432
+      - POSTGRES_USER=temporal
+      - POSTGRES_PWD=temporal
+      - POSTGRES_SEEDS=temporal-postgresql
+    depends_on:
+      temporal-postgresql:
+        condition: service_healthy
+    networks:
+      - audit-network
+
+  temporal-postgresql:
+    image: postgres:13
+    container_name: audit_platform_temporal_db
+    environment:
+      - POSTGRES_USER=temporal
+      - POSTGRES_PASSWORD=temporal
+      - POSTGRES_DB=temporal
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U temporal"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     networks:
       - audit-network
 
@@ -116,6 +166,73 @@ services:
     volumes:
       - .:/app
     command: sh -c "npm install && npm run dev -- --host"
+    networks:
+      - audit-network
+
+  appsmith:
+    image: index.docker.io/appsmith/appsmith-ce
+    container_name: audit_platform_appsmith
+    ports:
+      - "8081:80"
+      - "8443:443"
+    volumes:
+      - ./infrastructure/appsmith/stacks:/appsmith-stacks
+    restart: always
+    networks:
+      - audit-network
+
+  structurizr:
+    image: structurizr/lite
+    container_name: audit_platform_structurizr
+    ports:
+      - "8082:8080"
+    volumes:
+      - ./audit_reports:/usr/local/structurizr
+    networks:
+      - audit-network
+
+  sonarqube:
+    image: sonarqube:community
+    container_name: audit_platform_sonarqube
+    ports:
+      - "9003:9000"
+    environment:
+      - SONAR_ES_BOOTSTRAP_CHECKS_DISABLE=true
+    networks:
+      - audit-network
+
+  neo4j:
+    image: neo4j:enterprise
+    container_name: audit_platform_neo4j
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    environment:
+      - NEO4J_AUTH=neo4j/Umair@825
+      - NEO4J_ACCEPT_LICENSE_AGREEMENT=yes
+    volumes:
+      - ./infrastructure/neo4j/data:/data
+      - ./infrastructure/neo4j/logs:/logs
+    networks:
+      - audit-network
+
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: audit_platform_qdrant
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    volumes:
+      - ./infrastructure/qdrant/storage:/qdrant/storage
+    networks:
+      - audit-network
+
+  comfyui:
+    image: python:3.11-slim
+    container_name: audit_platform_comfyui
+    command: ["python", "-c", "from http.server import BaseHTTPRequestHandler, HTTPServer; import json; class MockComfyUI(BaseHTTPRequestHandler): def do_POST(s): s.send_response(200); s.send_header('Content-Type', 'application/json'); s.end_headers(); s.wfile.write(json.dumps({'prompt_id': 'mock-1234'}).encode('utf-8')); HTTPServer(('0.0.0.0', 8188), MockComfyUI).serve_forever()"]
+    ports:
+      - "8188:8188"
     networks:
       - audit-network
 

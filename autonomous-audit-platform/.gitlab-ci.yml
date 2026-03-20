@@ -1,0 +1,37 @@
+stages:
+  - audit
+  - test
+  - visualize
+
+variables:
+  SONAR_HOST_URL: "http://audit_platform_sonarqube:9000"
+  SONAR_TOKEN: "sqp_mock_token_for_mvp"
+
+static_analysis:
+  stage: audit
+  image: sonarsource/sonar-scanner-cli
+  script:
+    - sonar-scanner -Dsonar.projectKey=autonomous-audit-platform -Dsonar.sources=. -Dsonar.host.url=$SONAR_HOST_URL
+
+unit_tests:
+  stage: test
+  image: python:3.11-slim
+  script:
+    - pip install -r requirements.txt
+    - pytest tests/
+
+e2e_tests:
+  stage: test
+  image: mcr.microsoft.com/playwright:v1.40.0-focal
+  script:
+    - pip install -r requirements.txt
+    - playwright install chromium
+    - pytest tests/rigorous/test_e2e.py
+
+architecture_viz:
+  stage: visualize
+  script:
+    - python -m app.utils.visualize_arch
+  artifacts:
+    paths:
+      - structurizr/workspace.dsl

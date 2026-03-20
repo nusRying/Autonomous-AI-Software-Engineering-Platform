@@ -91,6 +91,18 @@ class ProjectState(BaseModel):
     last_updated: str
     modules: List[StateEntry]
 
+@router.get("/appsmith-config")
+async def get_appsmith_config():
+    """
+    Returns the JSON configuration for the Appsmith dashboard.
+    Users can import this into their Appsmith instance.
+    """
+    config_path = os.path.join("app", "api", "templates", "appsmith_dashboard_v1.json")
+    if os.path.exists(config_path):
+        with open(config_path, "r") as f:
+            return json.load(f)
+    raise HTTPException(status_code=404, detail="Config not found")
+
 @router.get("/state", response_model=ProjectState)
 async def get_project_state(secret: str = Depends(verify_appsmith_secret)):
     """

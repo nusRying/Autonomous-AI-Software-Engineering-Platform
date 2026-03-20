@@ -1,0 +1,19 @@
+# GitLab data
+infrastructure/gitlab/
+infrastructure/appsmith/
+infrastructure/postgres/
+infrastructure/neo4j/
+infrastructure/qdrant/
+
+# Environment
+.env
+__pycache__/
+*.pyc
+
+# Audit reports
+audit_reports/
+**/audit_reports/
+
+# Node
+node_modules/
+dist/

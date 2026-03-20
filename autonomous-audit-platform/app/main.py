@@ -9,7 +9,8 @@ Startup flow:
 import os
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.responses import RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
 
@@ -109,6 +110,10 @@ app.add_middleware(
 # Instrument app
 if PROMETHEUS_AVAILABLE:
     Instrumentator().instrument(app).expose(app, endpoint="/metrics", tags=["Observability"])
+
+@app.get("/", include_in_schema=False)
+async def root_redirect():
+    return RedirectResponse(url="/docs")
 
 # ── Include routers ──
 app.include_router(health_router)

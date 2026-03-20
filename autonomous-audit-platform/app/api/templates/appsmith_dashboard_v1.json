@@ -1,0 +1,43 @@
+{
+  "name": "Autonomous Engineering Control Panel",
+  "pages": [
+    {
+      "name": "Project Dashboard",
+      "widgets": [
+        {
+          "type": "TEXT_WIDGET",
+          "text": "🏗️ Autonomous System Monitor",
+          "fontSize": "24px",
+          "fontWeight": "bold"
+        },
+        {
+          "type": "TABLE_WIDGET",
+          "name": "AuditJobsTable",
+          "source": "{{fetchAuditJobs.data}}",
+          "columns": ["job_id", "status", "health_score", "created_at"]
+        },
+        {
+          "type": "BUTTON_WIDGET",
+          "text": "Trigger Manual Audit",
+          "onClick": "{{triggerAudit.run()}}"
+        }
+      ]
+    },
+    {
+      "name": "Radiografía Visualizer",
+      "widgets": [
+        {
+          "type": "IFRAME_WIDGET",
+          "source": "http://localhost:8082",
+          "label": "Live Architecture Map (Structurizr)"
+        }
+      ]
+    }
+  ],
+  "datasources": [
+    {
+      "name": "BackendAPI",
+      "url": "http://host.docker.internal:8000"
+    }
+  ]
+}
